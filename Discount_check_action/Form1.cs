@@ -27,16 +27,16 @@ namespace Discount_check_action
         string local_adr;
         string nomenclature_id;
 
-        const int group_min = 1;
+        const int group_min = 0;
         int group_max;
 
-        int groupid = 1;
+        int groupid = 0;
 
-        OleDbConnection conn;
+        private OleDbConnection conn;
 
         private MySqlCommand cmd;
-        private MySqlConnection serverConn;
-        private string connStr;
+        static MySqlConnection serverConn;
+        static MySqlConnection serverConn2;
 
         //import dll from use configuration file
         [DllImport("kernel32.dll")]
@@ -63,6 +63,9 @@ namespace Discount_check_action
         {
             switch (groupid)
             {
+                case 0:
+                    label_group_text.Text = "Неверные запреты";
+                    break;
                 case 1:
                     label_group_text.Text = "Акционные товары";
                     break;
@@ -88,14 +91,31 @@ namespace Discount_check_action
         {
              try
              {
-                 DirectoryInfo di = new DirectoryInfo(Environment.CurrentDirectory + "/log/");
+                 DirectoryInfo di = new DirectoryInfo(Environment.CurrentDirectory + "/log");
 
                  if (!Directory.Exists(Environment.CurrentDirectory + "/log/"))
                      return;
 
-                 foreach (FileInfo fi in di.GetFiles())
+                 if (check_par_log())
                  {
-                     fi.Delete();
+                     foreach (FileInfo fi in di.GetFiles())
+                     {
+                         fi.Delete();
+                     }
+                 }
+                 else
+                 {
+                     string time = DateTime.Now.ToString().Replace(".", "_").Replace(":", "_");
+
+                     if (!Directory.Exists(Environment.CurrentDirectory + "//log" +  "//backup_log//" + time + "//"))
+                     {
+                         Directory.CreateDirectory(Environment.CurrentDirectory + "//log" + "//backup_log//" + time + "//");
+
+                         foreach (FileInfo fi in di.GetFiles())
+                         {
+                             fi.MoveTo(Environment.CurrentDirectory + "//log" + "//backup_log//" + time + "//" + fi);
+                         }
+                     }
                  }
              }
              catch (System.Exception ex)
@@ -112,6 +132,24 @@ namespace Discount_check_action
             GetPrivateProfileString("GROUP", groupid.ToString(), "null", buffer, 50, Environment.CurrentDirectory + "\\config.ini");
 
             name = buffer.ToString();
+        }
+
+        private Boolean check_par_log()
+        {
+            StringBuilder buffer = new StringBuilder(10, 50);
+
+            GetPrivateProfileString("SETTINGS", "log_delete", "false", buffer, 50, Environment.CurrentDirectory + "\\config.ini");
+
+            try
+            {
+                return Convert.ToBoolean(buffer.ToString());
+            }
+            catch (System.Exception ex)
+            {
+                Log.log_write(ex.Message, "Exception", "Exception");
+                MessageBox.Show(ex.Message);
+                return false;
+            }
         }
 
         private void load_config()
@@ -138,6 +176,15 @@ namespace Discount_check_action
             GetPrivateProfileString("SETTINGS", "name", "", buffer, 50, Environment.CurrentDirectory + "\\config.ini");
 
             name = buffer.ToString();
+        }
+
+        private string get_name_group(int id)
+        {
+            StringBuilder buffer = new StringBuilder(10, 50);
+
+            GetPrivateProfileString("GROUP", id.ToString(), "null", buffer, 50, Environment.CurrentDirectory + "\\config.ini");
+
+            return buffer.ToString();
         }
 
         private void get_nomenclature_id()
@@ -181,28 +228,201 @@ namespace Discount_check_action
             StringBuilder buffer = new StringBuilder(10, 50);
 
             GetPrivateProfileString("SETTINGS", "srv_local ", "", buffer, 50, Environment.CurrentDirectory + "\\config.ini");
-            connStr = string.Format("server={0};uid={1};pwd={2};database={3};", buffer, "pricechecker", "7194622Parti", "ukmserver");
+            string connStr = string.Format("server={0};uid={1};pwd={2};database={3};", buffer, "pricechecker", "7194622Parti", "ukmserver");
             serverConn = new MySqlConnection(connStr);
+
+            serverConn = new MySqlConnection(connStr);
+            serverConn2 = new MySqlConnection(connStr);
+
+            conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + Environment.CurrentDirectory + source + name + ";Extended Properties= \"Excel 8.0;HDR=YES;\"");
+        }
+
+        private void check_illegal_ban()
+        {
+            dataGridView1.Rows.Clear();
+            toolTip1.Show("Проверка запретов...", this);
+            button_fix.Enabled = false;
+            button_search.Enabled = false;
+            button_group_next.Enabled = false;
+            button_group_prev.Enabled = false;
+
+            Application.DoEvents();
+
+            progressBar1.Maximum = query_sql_count();
+
+            progressBar1.Value = 0;
+
+            progressBar1.Step = 1;
+
+            query_sql();
+        }
+
+        private object query(string query,int par)
+        {
+            try
+            {
+                serverConn2.Open();
+
+                cmd = new MySqlCommand(query, serverConn2);
+
+                MySqlDataReader dr;
+
+                dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    switch (par)
+                    {
+                        case 1:
+                            return dr.GetValue(0);
+                        case 2:
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.log_write(ex.Message, "Exception", "Exception");
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (serverConn2.State == ConnectionState.Open)
+                    serverConn2.Close();
+            }
+            return 0;
+        }
+
+        private Int32 query_sql_count()
+        {
+
+            try
+            {
+                serverConn.Open();
+
+                cmd = new MySqlCommand("SELECT COUNT(*) FROM trm_in_pricelist_items WHERE price = minprice AND nomenclature_id = " +nomenclature_id, serverConn);
+
+                MySqlDataReader dr;
+
+                dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    return dr.GetInt32(0);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.log_write(ex.Message, "Exception", "Exception");
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (serverConn.State == ConnectionState.Open)
+                    serverConn.Close();
+            }
+            return 0;
+        }
+
+        private void query_sql()
+        {
+
+            try
+            {
+                serverConn.Open();
+
+                cmd = new MySqlCommand("SELECT item,price,minprice FROM trm_in_pricelist_items WHERE price = minprice AND nomenclature_id =" + nomenclature_id, serverConn);
+
+                MySqlDataReader dr;
+
+                dr = cmd.ExecuteReader();
+
+                while (dr.Read())
+                {
+                    string item = dr.GetValue(0).ToString();
+
+                    if (avoid(item))
+                    {
+
+                    }
+                    else
+                    {
+                        UInt32 price = Convert.ToUInt32(dr.GetValue(1));
+                        UInt32 min_price = Convert.ToUInt32(dr.GetValue(2));
+                        dataGridView1.Rows.Add(item, price, min_price, "3");
+                    }
+
+                    progressBar1.PerformStep();
+                    Application.DoEvents();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.log_write(ex.Message, "Exception", "Exception");
+                MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                toolTip1.Hide(this);
+                button_fix.Enabled = true;
+                button_search.Enabled = true;
+
+                if (groupid > group_min)
+                    button_group_prev.Enabled = true;
+
+                if(groupid < group_max)
+                    button_group_next.Enabled = true;
+
+                if (serverConn.State == ConnectionState.Open)
+                    serverConn.Close();
+            }
+        }
+
+        private Boolean avoid(string item)
+        {
+            Boolean check;
+
+            int i = 1;
+
+            while (i <= group_max)
+            {
+                check = Convert.ToBoolean(query_to_xls("SELECT barcode FROM [Лист1$] where barcode = '" + item + "'", get_name_group(i), 2));
+                i++;
+
+                if(check)
+                    return check;
+            }
+
+            return false;
         }
 
         private void button_search_Click(object sender, EventArgs e)
         {
-            dataGridView1.Rows.Clear();
-            progressBar1.Value = 0;
-            button_fix.Enabled = false;
+            if (groupid == 0)
+            {
+                check_illegal_ban();
+            }
+            else
+            {
+                dataGridView1.Rows.Clear();
+                progressBar1.Value = 0;
+                button_fix.Enabled = false;
 
-            progressBar1.Maximum = (Convert.ToInt32(count_to_xls("SELECT COUNT(*) FROM [Лист1$]", name)))-1;
+                progressBar1.Maximum = (Convert.ToInt32(count_to_xls("SELECT COUNT(*) FROM [Лист1$]", name))) - 1;
 
-            query_to_xls("SELECT * FROM [Лист1$]", name, 0);
+                query_to_xls("SELECT * FROM [Лист1$]", name, 0);
+            }
         }
 
         private void update_flag()
         {
             try
             {
-                if (File.Exists(local_adr + "//cash01.upd"))
+                if (!File.Exists(local_adr + "//cash01.upd"))
                 {
-                    File.Delete(local_adr + "//cash01.upd");
+                    toolTip1.Show("Установка флага...", this);
+
+                    File.Copy(Environment.CurrentDirectory + "//pattern//" + "cash01.upd", local_adr + "//cash01.upd");
                 }
             }
             catch (System.Exception ex)
@@ -213,19 +433,13 @@ namespace Discount_check_action
          
         }
 
-        private void send_file()
+        private void check_flag()
         {
             while (File.Exists(local_adr + "//cash01.upd"))
             {
                 toolTip1.Show("Жду снятия флага обновления", this);
 
                 Application.DoEvents();
-            }
-
-            if (!File.Exists(local_adr + "//cash01.upd"))
-            {
-                toolTip1.Show("Установка флага...", this);
-                File.Copy(Environment.CurrentDirectory + "//pattern//" + "cash01.upd", local_adr + "//cash01.upd");
             }
         }
 
@@ -237,7 +451,7 @@ namespace Discount_check_action
             {
                 serverConn.Open();
 
-                send_file();
+                check_flag();
 
                 insert_dbf("DELETE FROM 'PLULIM'");
 
@@ -377,9 +591,9 @@ namespace Discount_check_action
 
         private object query_to_xls(string query, object name, int par)
         {
-            conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + Environment.CurrentDirectory + source + name + ";Extended Properties= \"Excel 8.0;HDR=YES;\"");
-
             OleDbDataReader myReader;
+
+            conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + Environment.CurrentDirectory + source + name + ";Extended Properties= \"Excel 8.0;HDR=YES;\"");
 
             try
             {
@@ -388,6 +602,14 @@ namespace Discount_check_action
                 OleDbCommand cmd = conn.CreateCommand();
                 cmd.CommandText = query;
                 myReader = cmd.ExecuteReader();
+
+                if (par == 2)
+                {
+                    if (myReader.Read())
+                        return "true";
+                    else
+                        return "false";
+                }
 
                 while (myReader.Read())
                 {
@@ -418,8 +640,10 @@ namespace Discount_check_action
             {
                 if (conn.State == ConnectionState.Open)
                     conn.Close();
-
-                button_fix.Enabled = true;
+                if (par != 2)
+                {
+                    button_fix.Enabled = true;
+                }
             }
 
             return null;
@@ -427,9 +651,9 @@ namespace Discount_check_action
 
         private object count_to_xls(string query, object name)
         {
-            conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + Environment.CurrentDirectory + source + name + ";Extended Properties= \"Excel 8.0;HDR=YES;\"");
-
             OleDbDataReader myReader;
+
+            conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + Environment.CurrentDirectory + source + name + ";Extended Properties= \"Excel 8.0;HDR=YES;\"");
 
             try
             {
@@ -479,6 +703,10 @@ namespace Discount_check_action
                  dataGridView1.Rows[e.RowIndex].Cells["Column4"].Style.ForeColor = Color.Brown;
                  dataGridView1.Rows[e.RowIndex].Cells["Column4"].Value = "Цена?";
 				 break;
+             case 3:
+                 dataGridView1.Rows[e.RowIndex].Cells["Column4"].Style.ForeColor = Color.Brown;
+                 dataGridView1.Rows[e.RowIndex].Cells["Column4"].Value = "Легальность?";
+                 break;
 			 }
         }
 
@@ -487,18 +715,29 @@ namespace Discount_check_action
             if (e.RowIndex == -1)
                 return;
 
+            DataGridViewCell cell;
+            string msg;
+
             try
             {
                 switch (e.ColumnIndex)
                 {
                     case 0:
                         string bar = dataGridView1.Rows[e.RowIndex].Cells["Column1"].Value.ToString();
-                        string msg = (query_to_xls("SELECT * FROM [Лист1$] WHERE BARCODE = '" + bar + "'", name, 1)).ToString().Replace("  ", "");
+                        cell = dataGridView1.Rows[e.RowIndex].Cells["Column1"];
 
-                        DataGridViewCell cell = dataGridView1.Rows[e.RowIndex].Cells["Column1"];
+                        if (groupid == 0)
+                        {
+                            msg = (query("SELECT name FROM trm_in_items WHERE id = '"+bar+"'",1)).ToString();
+                        }
+                        else
+                        {
+                            msg = (query_to_xls("SELECT * FROM [Лист1$] WHERE BARCODE = '" + bar + "'", name, 1)).ToString().Replace("  ", "");
+                        }
 
                         cell.ToolTipText = msg;
                         break;
+
                     case 1:
                         //cell = dataGridView1.Rows[e.RowIndex].Cells["Column2"];
                         //cell.ToolTipText = "2";
@@ -516,6 +755,8 @@ namespace Discount_check_action
                             cell.ToolTipText = "Не установлена опция запрет акции!";
                         else if (err == "Цена?")
                             cell.ToolTipText = "Различия в цене по прайсу!";
+                        else if (err == "Легальность?")
+                            cell.ToolTipText = "Правомерность установки запрета не найдена!";
                         break;
                     default:
                         break;
