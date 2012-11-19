@@ -25,6 +25,8 @@ namespace Discount_check_action
                 StreamWriter sw = new StreamWriter(fileName, true, System.Text.Encoding.UTF8);
                 sw.WriteLine("[" + EntryDate + "][" + EntryTime + "][" + reason + "]" + " " + str);
                 sw.Close();
+                //check this
+                sw.Dispose();
             }
             catch (Exception ex)
             {

@@ -29,6 +29,8 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Discount_check_action));
             this.button_search = new System.Windows.Forms.Button();
             this.button_fix = new System.Windows.Forms.Button();
@@ -45,9 +47,25 @@
             this.button_group_prev = new System.Windows.Forms.Button();
             this.button_group_next = new System.Windows.Forms.Button();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripMenuItem3 = new System.Windows.Forms.ToolStripMenuItem();
+            this.акцияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.табачныеИзделияToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.сахарToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.упаковкаToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.контейнерToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.фруктыToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.копироватьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.выделитьToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.красныйToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.белыйToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.зеленыйToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.желтыйToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.синийToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.panel2.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // button_search
@@ -98,6 +116,9 @@
             this.dataGridView1.AllowUserToDeleteRows = false;
             this.dataGridView1.AllowUserToResizeColumns = false;
             this.dataGridView1.AllowUserToResizeRows = false;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.Color.Silver;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.Color.Black;
+            this.dataGridView1.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridView1.BackgroundColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.dataGridView1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
@@ -106,6 +127,14 @@
             this.Column2,
             this.Column3,
             this.Column4});
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.Color.Silver;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridView1.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridView1.Location = new System.Drawing.Point(6, 88);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.ReadOnly = true;
@@ -115,6 +144,7 @@
             this.dataGridView1.Size = new System.Drawing.Size(272, 281);
             this.dataGridView1.TabIndex = 0;
             this.dataGridView1.TabStop = false;
+            this.dataGridView1.CellMouseClick += new System.Windows.Forms.DataGridViewCellMouseEventHandler(this.dataGridView1_CellMouseClick);
             this.dataGridView1.CellMouseEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellMouseEnter);
             this.dataGridView1.RowsAdded += new System.Windows.Forms.DataGridViewRowsAddedEventHandler(this.dataGridView1_RowsAdded);
             // 
@@ -209,6 +239,128 @@
             this.button_group_next.UseVisualStyleBackColor = true;
             this.button_group_next.Click += new System.EventHandler(this.button_group_next_Click);
             // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripMenuItem3,
+            this.выделитьToolStripMenuItem,
+            this.копироватьToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(184, 70);
+            // 
+            // toolStripMenuItem3
+            // 
+            this.toolStripMenuItem3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.акцияToolStripMenuItem,
+            this.табачныеИзделияToolStripMenuItem,
+            this.сахарToolStripMenuItem,
+            this.упаковкаToolStripMenuItem,
+            this.контейнерToolStripMenuItem,
+            this.фруктыToolStripMenuItem});
+            this.toolStripMenuItem3.Name = "toolStripMenuItem3";
+            this.toolStripMenuItem3.Size = new System.Drawing.Size(183, 22);
+            this.toolStripMenuItem3.Text = "Добавить в Список";
+            // 
+            // акцияToolStripMenuItem
+            // 
+            this.акцияToolStripMenuItem.Name = "акцияToolStripMenuItem";
+            this.акцияToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.акцияToolStripMenuItem.Text = "Акция";
+            this.акцияToolStripMenuItem.Click += new System.EventHandler(this.акцияToolStripMenuItem_Click);
+            // 
+            // табачныеИзделияToolStripMenuItem
+            // 
+            this.табачныеИзделияToolStripMenuItem.Name = "табачныеИзделияToolStripMenuItem";
+            this.табачныеИзделияToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.табачныеИзделияToolStripMenuItem.Text = "Табачные Изделия";
+            this.табачныеИзделияToolStripMenuItem.Click += new System.EventHandler(this.табачныеИзделияToolStripMenuItem_Click);
+            // 
+            // сахарToolStripMenuItem
+            // 
+            this.сахарToolStripMenuItem.Name = "сахарToolStripMenuItem";
+            this.сахарToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.сахарToolStripMenuItem.Text = "Сахар";
+            this.сахарToolStripMenuItem.Click += new System.EventHandler(this.сахарToolStripMenuItem_Click);
+            // 
+            // упаковкаToolStripMenuItem
+            // 
+            this.упаковкаToolStripMenuItem.Name = "упаковкаToolStripMenuItem";
+            this.упаковкаToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.упаковкаToolStripMenuItem.Text = "Упаковка";
+            this.упаковкаToolStripMenuItem.Click += new System.EventHandler(this.упаковкаToolStripMenuItem_Click);
+            // 
+            // контейнерToolStripMenuItem
+            // 
+            this.контейнерToolStripMenuItem.Name = "контейнерToolStripMenuItem";
+            this.контейнерToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.контейнерToolStripMenuItem.Text = "Контейнер";
+            this.контейнерToolStripMenuItem.Click += new System.EventHandler(this.контейнерToolStripMenuItem_Click);
+            // 
+            // фруктыToolStripMenuItem
+            // 
+            this.фруктыToolStripMenuItem.Name = "фруктыToolStripMenuItem";
+            this.фруктыToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.фруктыToolStripMenuItem.Text = "Фрукты";
+            this.фруктыToolStripMenuItem.Click += new System.EventHandler(this.фруктыToolStripMenuItem_Click);
+            // 
+            // копироватьToolStripMenuItem
+            // 
+            this.копироватьToolStripMenuItem.Name = "копироватьToolStripMenuItem";
+            this.копироватьToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.копироватьToolStripMenuItem.Text = "Копировать";
+            this.копироватьToolStripMenuItem.Click += new System.EventHandler(this.копироватьToolStripMenuItem_Click);
+            // 
+            // выделитьToolStripMenuItem
+            // 
+            this.выделитьToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.красныйToolStripMenuItem,
+            this.зеленыйToolStripMenuItem,
+            this.желтыйToolStripMenuItem,
+            this.синийToolStripMenuItem,
+            this.белыйToolStripMenuItem});
+            this.выделитьToolStripMenuItem.Name = "выделитьToolStripMenuItem";
+            this.выделитьToolStripMenuItem.Size = new System.Drawing.Size(183, 22);
+            this.выделитьToolStripMenuItem.Text = "Выделить";
+            // 
+            // красныйToolStripMenuItem
+            // 
+            this.красныйToolStripMenuItem.ForeColor = System.Drawing.Color.Red;
+            this.красныйToolStripMenuItem.Name = "красныйToolStripMenuItem";
+            this.красныйToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.красныйToolStripMenuItem.Text = "Красный";
+            this.красныйToolStripMenuItem.Click += new System.EventHandler(this.красныйToolStripMenuItem_Click);
+            // 
+            // белыйToolStripMenuItem
+            // 
+            this.белыйToolStripMenuItem.Name = "белыйToolStripMenuItem";
+            this.белыйToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.белыйToolStripMenuItem.Text = "Белый";
+            this.белыйToolStripMenuItem.Click += new System.EventHandler(this.белыйToolStripMenuItem_Click);
+            // 
+            // зеленыйToolStripMenuItem
+            // 
+            this.зеленыйToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.зеленыйToolStripMenuItem.Name = "зеленыйToolStripMenuItem";
+            this.зеленыйToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.зеленыйToolStripMenuItem.Text = "Зеленый";
+            this.зеленыйToolStripMenuItem.Click += new System.EventHandler(this.зеленыйToolStripMenuItem_Click);
+            // 
+            // желтыйToolStripMenuItem
+            // 
+            this.желтыйToolStripMenuItem.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.желтыйToolStripMenuItem.Name = "желтыйToolStripMenuItem";
+            this.желтыйToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.желтыйToolStripMenuItem.Text = "Желтый";
+            this.желтыйToolStripMenuItem.Click += new System.EventHandler(this.желтыйToolStripMenuItem_Click);
+            // 
+            // синийToolStripMenuItem
+            // 
+            this.синийToolStripMenuItem.ForeColor = System.Drawing.SystemColors.HotTrack;
+            this.синийToolStripMenuItem.Name = "синийToolStripMenuItem";
+            this.синийToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.синийToolStripMenuItem.Text = "Синий";
+            this.синийToolStripMenuItem.Click += new System.EventHandler(this.синийToolStripMenuItem_Click);
+            // 
             // Discount_check_action
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -226,6 +378,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.panel2.ResumeLayout(false);
             this.panel2.PerformLayout();
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -247,6 +400,22 @@
         private System.Windows.Forms.Button button_group_prev;
         private System.Windows.Forms.Button button_group_next;
         private System.Windows.Forms.ToolTip toolTip1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem3;
+        private System.Windows.Forms.ToolStripMenuItem акцияToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem табачныеИзделияToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem сахарToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem упаковкаToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem контейнерToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem фруктыToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem копироватьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem выделитьToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem красныйToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem белыйToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem зеленыйToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem желтыйToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem синийToolStripMenuItem;
     }
 }
 

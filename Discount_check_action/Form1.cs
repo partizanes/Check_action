@@ -26,6 +26,10 @@ namespace Discount_check_action
         string source;
         string local_adr;
         string nomenclature_id;
+        static string bar_insert;
+        static string name_insert;
+        static string price_insert;
+        static int index_num;
 
         const int group_min = 0;
         int group_max;
@@ -58,7 +62,7 @@ namespace Discount_check_action
 
             load_group();
         }
-       
+
         private void load_group()
         {
             switch (groupid)
@@ -67,24 +71,28 @@ namespace Discount_check_action
                     label_group_text.Text = "Неверные запреты";
                     break;
                 case 1:
-                    label_group_text.Text = "Акционные товары";
-                    break;
                 case 2:
-                    label_group_text.Text = "Табачные Изделия";
-                    break;
                 case 3:
-                    label_group_text.Text = "Сахар Фиксир.Цена";
-                    break;
                 case 4:
-                    label_group_text.Text = "Пакет П/Э Цена.Изг";
+                    label_group_text.Text = check_group_name();
                     break;
                 case 5:
-                    label_group_text.Text = "       Контейнеры ";
+                case 6:
+                    label_group_text.Text = "         " + check_group_name();
                     break;
             }
 
             if (group_min == groupid)
                 button_group_prev.Enabled = false;
+        }
+
+        private string check_group_name()
+        {
+            StringBuilder buffer = new StringBuilder(10, 50);
+
+            GetPrivateProfileString("GROUP", "name_"+groupid, "null", buffer, 50, Environment.CurrentDirectory + "\\config.ini");
+
+            return buffer.ToString();
         }
 
         private void clear_log()
@@ -123,15 +131,6 @@ namespace Discount_check_action
                  Log.log_write(ex.Message, "Exception", "Exception");
                  MessageBox.Show(ex.Message);
              }
-        }
-
-        private void get_name()
-        {
-            StringBuilder buffer = new StringBuilder(10, 50);
-
-            GetPrivateProfileString("GROUP", groupid.ToString(), "null", buffer, 50, Environment.CurrentDirectory + "\\config.ini");
-
-            name = buffer.ToString();
         }
 
         private Boolean check_par_log()
@@ -241,6 +240,7 @@ namespace Discount_check_action
         {
             dataGridView1.Rows.Clear();
             toolTip1.Show("Проверка запретов...", this);
+
             button_fix.Enabled = false;
             button_search.Enabled = false;
             button_group_next.Enabled = false;
@@ -341,6 +341,8 @@ namespace Discount_check_action
                 {
                     string item = dr.GetValue(0).ToString();
 
+                    toolTip1.Show("Проверка запретов...", this);
+
                     if (avoid(item))
                     {
 
@@ -384,6 +386,8 @@ namespace Discount_check_action
 
             int i = 1;
 
+            toolTip1.Show("Проверка запретов...", this);
+
             while (i <= group_max)
             {
                 check = Convert.ToBoolean(query_to_xls("SELECT barcode FROM [Лист1$] where barcode = '" + item + "'", get_name_group(i), 2));
@@ -398,6 +402,8 @@ namespace Discount_check_action
 
         private void button_search_Click(object sender, EventArgs e)
         {
+            button_search.Enabled = false;
+
             if (groupid == 0)
             {
                 check_illegal_ban();
@@ -412,6 +418,8 @@ namespace Discount_check_action
 
                 query_to_xls("SELECT * FROM [Лист1$]", name, 0);
             }
+
+            button_search.Enabled = true;
         }
 
         private void update_flag()
@@ -464,11 +472,21 @@ namespace Discount_check_action
                     {
 
                     }
-                    else
+                    else if (par == "Легальность?")
+                    {
+                        insert_dbf("INSERT INTO PLULIM.DBF (CARDARTICU,PERCENT) VALUES ('" + bar + "',0)");
+
+                        Log.log_write("Запрет скидки убран: " + bar, "UPDATE", "update");
+
+                        dataGridView1.Rows.Remove(dr);
+                    }
+                    else if (par == "Запрет?")
                     {
                         insert_dbf("INSERT INTO PLULIM.DBF (CARDARTICU,PERCENT) VALUES ('" + bar + "',100)");
 
                         Log.log_write("Запрет скидки установлен: " + bar, "UPDATE", "update");
+
+                        dataGridView1.Rows.Remove(dr);
                     }
                 }
 
@@ -486,7 +504,8 @@ namespace Discount_check_action
                 if (serverConn.State == ConnectionState.Open)
                     serverConn.Close();
 
-                button_search.PerformClick();
+                //if uncomit this ,remove all dataGridView1.Rows.Remove(dr);
+                //button_search.PerformClick();
             }
         }
 
@@ -591,6 +610,13 @@ namespace Discount_check_action
 
         private object query_to_xls(string query, object name, int par)
         {
+            //par 
+            //1 общие запросы для проверки акций по спискам 
+            //2 параметр для проверки недействительных акций 
+            //3 запросы не требующие datareader
+
+            toolTip1.Show("Проверка запретов...", this);
+
             OleDbDataReader myReader;
 
             conn = new OleDbConnection("Provider=Microsoft.Jet.OLEDB.4.0;Data Source=" + Environment.CurrentDirectory + source + name + ";Extended Properties= \"Excel 8.0;HDR=YES;\"");
@@ -601,6 +627,17 @@ namespace Discount_check_action
 
                 OleDbCommand cmd = conn.CreateCommand();
                 cmd.CommandText = query;
+
+                if (par == 3)
+                {
+                    cmd.ExecuteNonQuery();
+
+                    if (conn.State == ConnectionState.Open)
+                        conn.Close();
+
+                    return "true";
+                }
+
                 myReader = cmd.ExecuteReader();
 
                 if (par == 2)
@@ -633,7 +670,7 @@ namespace Discount_check_action
             {
                 Log.log_write(ex.Message, "Exception", "Exception");
                 MessageBox.Show(ex.Message);
-                return null;
+                return "false";
             }
 
             finally
@@ -704,10 +741,12 @@ namespace Discount_check_action
                  dataGridView1.Rows[e.RowIndex].Cells["Column4"].Value = "Цена?";
 				 break;
              case 3:
-                 dataGridView1.Rows[e.RowIndex].Cells["Column4"].Style.ForeColor = Color.Brown;
+                 dataGridView1.Rows[e.RowIndex].Cells["Column4"].Style.ForeColor = Color.Blue;
                  dataGridView1.Rows[e.RowIndex].Cells["Column4"].Value = "Легальность?";
                  break;
 			 }
+
+             dataGridView1.ClearSelection();
         }
 
         private void dataGridView1_CellMouseEnter(object sender, DataGridViewCellEventArgs e)
@@ -780,7 +819,8 @@ namespace Discount_check_action
                 button_group_next.Enabled = false;
 
             load_group();
-            get_name();
+            //get_name();
+            name = get_name_group(groupid);
             dataGridView1.Rows.Clear();
             //button_search.PerformClick();
         }
@@ -796,9 +836,118 @@ namespace Discount_check_action
                 button_group_prev.Enabled = false;
 
             load_group();
-            get_name();
+            //get_name();
+            name = get_name_group(groupid);
             dataGridView1.Rows.Clear();
             //button_search.PerformClick();
+        }
+
+        private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+
+            if (e.Button == MouseButtons.Right)
+            {
+                bar_insert = dataGridView1.Rows[e.RowIndex].Cells["Column1"].Value.ToString();
+                price_insert = dataGridView1.Rows[e.RowIndex].Cells["Column2"].Value.ToString();
+                name_insert = (query("SELECT name FROM trm_in_items WHERE id = '" + bar_insert + "'", 1)).ToString();
+                index_num = e.RowIndex;
+                contextMenuStrip1.Show(Cursor.Position.X, Cursor.Position.Y);
+            }
+        }
+
+        // ----------------------ToolStrip------------------------------------------
+        // ---------------------Параметры действий для меню-------------------------
+
+        private void акцияToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            add_to_xls("action.xls");
+        }
+
+        private void табачныеИзделияToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            add_to_xls("tabacco.xls");
+        }
+
+        private void сахарToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            add_to_xls("sugar.xls");
+        }
+
+        private void упаковкаToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            add_to_xls("package.xls");
+        }
+
+        private void контейнерToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            add_to_xls("container.xls");
+        }
+
+        private void фруктыToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            add_to_xls("fruit.xls");
+        }
+
+        private void копироватьToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetDataObject(bar_insert);
+        }
+
+        // --------------------------------------------------------------------------
+
+        private void add_to_xls(string parametr)
+        {
+            if (Convert.ToBoolean(query_to_xls("INSERT INTO [Лист1$] (BARCODE,NAME,PRICE) VALUES ('" + bar_insert + "','" + name_insert + "','" + price_insert + "')", parametr, 3)))
+            {
+                MessageBox.Show("Успешно!");
+                dataGridView1.Rows.RemoveAt(index_num);
+            }
+            else
+            {
+                MessageBox.Show("Отказ!");
+            }
+        }
+
+        //---------------------------------------------------------------------------
+
+        private void красныйToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dataGridView1.Rows[index_num].Cells["Column1"].Style.BackColor = Color.IndianRed;
+            dataGridView1.Rows[index_num].Cells["Column2"].Style.BackColor = Color.IndianRed;
+            dataGridView1.Rows[index_num].Cells["Column3"].Style.BackColor = Color.IndianRed;
+            dataGridView1.Rows[index_num].Cells["Column4"].Style.BackColor = Color.IndianRed;
+        }
+
+        private void белыйToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dataGridView1.Rows[index_num].Cells["Column1"].Style.BackColor = Color.White;
+            dataGridView1.Rows[index_num].Cells["Column2"].Style.BackColor = Color.White;
+            dataGridView1.Rows[index_num].Cells["Column3"].Style.BackColor = Color.White;
+            dataGridView1.Rows[index_num].Cells["Column4"].Style.BackColor = Color.White;
+        }
+
+        private void зеленыйToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dataGridView1.Rows[index_num].Cells["Column1"].Style.BackColor = Color.LawnGreen;
+            dataGridView1.Rows[index_num].Cells["Column2"].Style.BackColor = Color.LawnGreen;
+            dataGridView1.Rows[index_num].Cells["Column3"].Style.BackColor = Color.LawnGreen;
+            dataGridView1.Rows[index_num].Cells["Column4"].Style.BackColor = Color.LawnGreen;
+        }
+
+        private void желтыйToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dataGridView1.Rows[index_num].Cells["Column1"].Style.BackColor = Color.Yellow;
+            dataGridView1.Rows[index_num].Cells["Column2"].Style.BackColor = Color.Yellow;
+            dataGridView1.Rows[index_num].Cells["Column3"].Style.BackColor = Color.Yellow;
+            dataGridView1.Rows[index_num].Cells["Column4"].Style.BackColor = Color.Yellow;
+        }
+
+        private void синийToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            dataGridView1.Rows[index_num].Cells["Column1"].Style.BackColor = Color.LightBlue;
+            dataGridView1.Rows[index_num].Cells["Column2"].Style.BackColor = Color.LightBlue;
+            dataGridView1.Rows[index_num].Cells["Column3"].Style.BackColor = Color.LightBlue;
+            dataGridView1.Rows[index_num].Cells["Column4"].Style.BackColor = Color.LightBlue;
         }
     }
 }
