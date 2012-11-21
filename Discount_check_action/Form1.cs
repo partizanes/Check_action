@@ -783,10 +783,9 @@ namespace Discount_check_action
                 button_group_next.Enabled = false;
 
             load_group();
-            //get_name();
+
             name = get_name_group(groupid);
             dataGridView1.Rows.Clear();
-            //button_search.PerformClick();
         }
 
         private void button_group_prev_Click(object sender, EventArgs e)
@@ -817,8 +816,8 @@ namespace Discount_check_action
             }
         }
 
-        // ----------------------ToolStrip------------------------------------------
-        // ---------------------Параметры действий для меню-------------------------
+        // ----------------------ToolStrip-----------------------------------------
+        // ----------------------Параметры-----------------------------------------
 
         private void акцияToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -866,6 +865,11 @@ namespace Discount_check_action
             else
             {
                 MessageBox.Show("Отказ!");
+
+                dataGridView1.Rows[index_num].Cells["Column1"].Style.BackColor = Color.IndianRed;
+                dataGridView1.Rows[index_num].Cells["Column2"].Style.BackColor = Color.IndianRed;
+                dataGridView1.Rows[index_num].Cells["Column3"].Style.BackColor = Color.IndianRed;
+                dataGridView1.Rows[index_num].Cells["Column4"].Style.BackColor = Color.IndianRed;
             }
         }
 
