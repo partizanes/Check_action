@@ -248,7 +248,7 @@ namespace Discount_check_action
 
             Application.DoEvents();
 
-            progressBar1.Maximum = query_sql_count();
+            progressBar1.Maximum = Convert.ToInt32(query_sql_count("SELECT COUNT(*) FROM trm_in_pricelist_items WHERE price = minprice AND nomenclature_id = " +nomenclature_id));
 
             progressBar1.Value = 0;
 
@@ -257,7 +257,7 @@ namespace Discount_check_action
             query_sql();
         }
 
-        private object query(string query,int par)
+        private object query_sql_count(string query)
         {
             try
             {
@@ -271,13 +271,7 @@ namespace Discount_check_action
 
                 while (dr.Read())
                 {
-                    switch (par)
-                    {
-                        case 1:
-                            return dr.GetValue(0);
-                        case 2:
-                            break;
-                    }
+                    return dr.GetValue(0);
                 }
             }
             catch (Exception ex)
@@ -289,37 +283,6 @@ namespace Discount_check_action
             {
                 if (serverConn2.State == ConnectionState.Open)
                     serverConn2.Close();
-            }
-            return 0;
-        }
-
-        private Int32 query_sql_count()
-        {
-
-            try
-            {
-                serverConn.Open();
-
-                cmd = new MySqlCommand("SELECT COUNT(*) FROM trm_in_pricelist_items WHERE price = minprice AND nomenclature_id = " +nomenclature_id, serverConn);
-
-                MySqlDataReader dr;
-
-                dr = cmd.ExecuteReader();
-
-                while (dr.Read())
-                {
-                    return dr.GetInt32(0);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.log_write(ex.Message, "Exception", "Exception");
-                MessageBox.Show(ex.Message);
-            }
-            finally
-            {
-                if (serverConn.State == ConnectionState.Open)
-                    serverConn.Close();
             }
             return 0;
         }
@@ -554,7 +517,7 @@ namespace Discount_check_action
 
         private void check_action(string barcode,string price_pattern)
         {
-            MySqlDataReader reader;
+            MySqlDataReader reader = null;
 
             try
             {
@@ -563,6 +526,13 @@ namespace Discount_check_action
                 cmd = new MySqlCommand("SELECT item,price,minprice FROM trm_in_pricelist_items WHERE nomenclature_id = '"+ nomenclature_id +"' AND item = '" + barcode + "'", serverConn);
 
                 reader = cmd.ExecuteReader();
+
+                if (reader == null)
+                {
+                    progressBar1.PerformStep();
+                    return;
+                }
+
 
                 Application.DoEvents();
 
@@ -587,12 +557,6 @@ namespace Discount_check_action
                  }
                  progressBar1.PerformStep();
                 }
-
-                if (!reader.Read())
-                {
-                    progressBar1.PerformStep();
-                }
-                
             }
 
             catch (Exception exc)
@@ -767,7 +731,7 @@ namespace Discount_check_action
 
                         if (groupid == 0)
                         {
-                            msg = (query("SELECT name FROM trm_in_items WHERE id = '"+bar+"'",1)).ToString();
+                            msg = query_sql_count("SELECT name FROM trm_in_items WHERE id = '"+bar+"'").ToString();
                         }
                         else
                         {
@@ -836,10 +800,8 @@ namespace Discount_check_action
                 button_group_prev.Enabled = false;
 
             load_group();
-            //get_name();
             name = get_name_group(groupid);
             dataGridView1.Rows.Clear();
-            //button_search.PerformClick();
         }
 
         private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
@@ -849,7 +811,7 @@ namespace Discount_check_action
             {
                 bar_insert = dataGridView1.Rows[e.RowIndex].Cells["Column1"].Value.ToString();
                 price_insert = dataGridView1.Rows[e.RowIndex].Cells["Column2"].Value.ToString();
-                name_insert = (query("SELECT name FROM trm_in_items WHERE id = '" + bar_insert + "'", 1)).ToString();
+                name_insert = (query_sql_count("SELECT name FROM trm_in_items WHERE id = '" + bar_insert + "'")).ToString();
                 index_num = e.RowIndex;
                 contextMenuStrip1.Show(Cursor.Position.X, Cursor.Position.Y);
             }
@@ -899,7 +861,6 @@ namespace Discount_check_action
         {
             if (Convert.ToBoolean(query_to_xls("INSERT INTO [Лист1$] (BARCODE,NAME,PRICE) VALUES ('" + bar_insert + "','" + name_insert + "','" + price_insert + "')", parametr, 3)))
             {
-                MessageBox.Show("Успешно!");
                 dataGridView1.Rows.RemoveAt(index_num);
             }
             else

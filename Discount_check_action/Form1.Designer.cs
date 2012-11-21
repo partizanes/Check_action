@@ -410,7 +410,6 @@
         private System.Windows.Forms.ToolStripMenuItem фруктыToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem копироватьToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem выделитьToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
         private System.Windows.Forms.ToolStripMenuItem красныйToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem белыйToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem зеленыйToolStripMenuItem;
