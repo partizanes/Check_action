@@ -496,8 +496,8 @@ namespace Discount_check_action
             }
             finally
             {
-                if (serverConn.State == ConnectionState.Open)
-                    serverConn.Close();
+                if (conn.State == ConnectionState.Open)
+                    conn.Close();
 
                 while (File.Exists(local_adr + "//cash01.upd"))
                 {
@@ -913,6 +913,11 @@ namespace Discount_check_action
             dataGridView1.Rows[index_num].Cells["Column2"].Style.BackColor = Color.LightBlue;
             dataGridView1.Rows[index_num].Cells["Column3"].Style.BackColor = Color.LightBlue;
             dataGridView1.Rows[index_num].Cells["Column4"].Style.BackColor = Color.LightBlue;
+        }
+
+        private void удалитьИзСписковToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
