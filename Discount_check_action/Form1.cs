@@ -227,7 +227,7 @@ namespace Discount_check_action
             StringBuilder buffer = new StringBuilder(10, 50);
 
             GetPrivateProfileString("SETTINGS", "srv_local ", "", buffer, 50, Environment.CurrentDirectory + "\\config.ini");
-            string connStr = string.Format("server={0};uid={1};pwd={2};database={3};", buffer, "pricechecker", "7194622Parti", "ukmserver");
+            string connStr = string.Format("server={0};uid={1};pwd={2};database={3};", buffer, "pricechecker", "", "ukmserver");
             serverConn = new MySqlConnection(connStr);
 
             serverConn = new MySqlConnection(connStr);
